@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VideoPlayer from './components/video/VideoPlayer.vue'
-import * as yt from 'videojs-youtube/dist/Youtube.js'
 const videoOptions = ref({
+  techOrder: ['youtube'],
   autoplay: true,
   controls: false,
-  techOrder: ['Youtube'],
   sources: [
     {
       src: 'https://www.youtube.com/watch?v=7CVtTOpgSyY',
       type: 'video/youtube',
     },
   ],
+  youtube: { 'iv_load_policy': 1 }
 })
 </script>
 

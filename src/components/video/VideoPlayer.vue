@@ -17,9 +17,11 @@ let player: Player
 
 onMounted(() => {
   videojs.registerPlugin
-  player = videojs(videoRef.value, props.options, () => {
-    player.log('onPlayerReady', this)
-  })
+  if (videoRef.value) {
+    player = videojs(videoRef.value, props.options, () => {
+      // player.log('onPlayerReady', this)
+    })
+  }
 })
 
 onBeforeUnmount(() => {
