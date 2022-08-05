@@ -2,6 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue'
 import videojs from 'video.js'
 import 'videojs-youtube'
+
 import Player = videojs.Player
 
 const videoRef = ref(null)
