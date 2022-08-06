@@ -8,9 +8,11 @@ const videoOptions = ref({
   sources: [
     {
       src: 'https://www.youtube.com/watch?v=7CVtTOpgSyY',
-      type: 'video/youtube',
+      type: 'video/youtube'
     },
   ],
+  height: 300,
+  width: 400,
   youtube: { 'iv_load_policy': 1 }
 })
 </script>

@@ -17,11 +17,8 @@ const props = defineProps({
 let player: Player
 
 onMounted(() => {
-  videojs.registerPlugin
   if (videoRef.value) {
-    player = videojs(videoRef.value, props.options, () => {
-      // player.log('onPlayerReady', this)
-    })
+    player = videojs(videoRef.value, props.options, () => {})
   }
 })
 
