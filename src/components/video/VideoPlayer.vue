@@ -17,10 +17,10 @@ const formattedTimeRef = computed(() => {
   return { current: padTime(timeRef.value.current), total: padTime(timeRef.value.total) }
 })
 
-const padTime = (seconds) => {
+const padTime = (seconds: number): string => {
   const min = Math.floor(seconds / 60)
   const sec = seconds % 60
-  return `${min}:${sec.toString().padStart(2, 0)}`
+  return `${min}:${sec.toString().padStart(2, '0')}`
 }
 
 const props = defineProps({
@@ -77,16 +77,16 @@ const updateTimeRef = () => {
   if (videoIdx.value > 0) {
     current += videoData.videos.slice(0, videoIdx.value - 1).reduce((dur, video) => dur + video.duration, videoData.videos[0].duration)
   }
-  current = parseInt(current)
+  current = parseInt(current.toString())
   const total = parseInt(
     videoData.videos.reduce(
       (dur, video) =>
         dur + video.duration, videoData.videos[0].duration
-    ))
+    ).toString())
   timeRef.value = { current, total }
 }
 
-const loadDurations = async (videos: Array<{src: string, type: string}>): Array<VideoData> => {
+const loadDurations = async (videos: Array<{src: string, type: string}>): Promise<Array<VideoData>> => {
   const elVid = document.createElement('video')
   elVid.style.display = 'none'
   document.body.appendChild(elVid)
@@ -102,7 +102,7 @@ const loadDurations = async (videos: Array<{src: string, type: string}>): Array<
   return results
 }
 
-const getDuration = async (dataPlayer: Player, videoSource) => {
+const getDuration = async (dataPlayer: Player, videoSource: {src: string, type: string}): Promise<number> => {
   return new Promise((resolve) => {
     dataPlayer.src(videoSource)
     dataPlayer.one('loadedmetadata', () => {
