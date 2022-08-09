@@ -1,86 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VideoPlayer from './components/video/VideoPlayer.vue'
-const videoOptions = ref({
-  techOrder: ['youtube'],
-  autoplay: true,
-  controls: false,
-  sources: [
-    {
-      src: 'https://www.youtube.com/watch?v=7CVtTOpgSyY',
-      type: 'video/youtube'
-    },
-  ],
-  height: 300,
-  width: 400,
-  youtube: { 'iv_load_policy': 1 }
+const videos = [
+      {
+        // src: 'https://www.youtube.com/watch?v=xjS6SftYQaQ',
+        src: 'https://www.youtube.com/watch?v=7CVtTOpgSyY',
+        type: 'video/youtube'
+      },
+      {
+        src: 'https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8',
+        type: 'application/x-mpegURL',
+      }
+]
+const options = ref({
+  videos
 })
 </script>
 
 <template>
-  <VideoPlayer :options="videoOptions"></VideoPlayer>
+  <VideoPlayer :options="options"></VideoPlayer>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
 </style>
