@@ -1,6 +1,16 @@
 # video-exercise
 
-This template should help get you started developing with Vue 3 in Vite.
+#TODOs:
+
+ - Move video data and logic to class.
+ - Add scrubber component.
+ - Use scrubber component inplace of default controls.
+ - Add types and interfaces for data objects
+ - Possible refactor some logic for better reusability
+ - Move applicable items to scrubber component
+
+
+#Development Setup
 
 ## Recommended IDE Setup
 
