@@ -11,19 +11,10 @@ type VideoData = {
 }
 
 const videoRef = ref(null)
-let videoIdx = ref(0)
+const videoIdx = ref(0)
 const timeRef = ref({ current: 0, total: 0 })
 const progress = ref(0)
 const playStatus = ref('stopped')
-const formattedTimeRef = computed(() => {
-  return { current: padTime(timeRef.value.current), total: padTime(timeRef.value.total) }
-})
-
-const padTime = (seconds: number): string => {
-  const min = Math.floor(seconds / 60)
-  const sec = seconds % 60
-  return `${min}:${sec.toString().padStart(2, '0')}`
-}
 
 const props = defineProps({
   options: {
@@ -33,7 +24,7 @@ const props = defineProps({
         videos: [],
       }
     },
-  }
+  },
 })
 
 const baseOptions = {
@@ -53,7 +44,12 @@ onMounted(async () => {
   }
   videoData.videos = await loadDurations(props.options.videos)
   setupPlayerEvents()
-  updateTimeRef()
+})
+
+onBeforeUnmount(() => {
+  if (player) {
+    player.dispose()
+  }
 })
 
 const setupPlayerEvents = () => {
@@ -80,16 +76,17 @@ const updateTimeRef = (offset?: number) => {
     timeRef.value = { current: 0, total: 0 }
     return
   }
-  let current = offset || player.currentTime()
-  if (videoIdx.value > 0) {
-    current += videoData.videos.slice(0, videoIdx.value).reduce((dur, video) => dur + video.duration, 0)
-  }
-  current = parseInt(current.toFixed(0))
-  console.log('vidx', videoIdx.value)
-  console.log('current time', current)
-  const total = parseInt(videoData.videos.reduce((dur, video) => dur + video.duration, 0).toString())
+  const current = sumDurations(videoData.videos.slice(0, videoIdx.value), offset || player.currentTime())
+  const total = sumDurations(videoData.videos)
   timeRef.value = { current, total }
   progress.value = (current / total) * 100
+}
+
+const sumDurations = (videos: Array<VideoData>, beginningDuration: number = 0): number => {
+  if (videos.length) {
+    beginningDuration += videos.reduce((dur, video) => dur + video.duration, 0)
+  }
+  return parseInt(beginningDuration.toFixed(0))
 }
 
 const loadDurations = async (videos: Array<{ src: string; type: string }>): Promise<Array<VideoData>> => {
@@ -100,64 +97,33 @@ const loadDurations = async (videos: Array<{ src: string; type: string }>): Prom
   const results = []
   for (let i = 0; i < videos.length; i++) {
     const src = videos[i]
-    const duration = await getDuration(dataPlayer, src)
-    results.push({ src, duration })
+    await loadVideoSource(dataPlayer, src)
+    results.push({ src, duration: dataPlayer.duration() })
   }
   dataPlayer.dispose()
   elVid.remove()
   return results
 }
 
-const getDuration = async (dataPlayer: Player, videoSource: { src: string; type: string }): Promise<number> => {
-  return new Promise((resolve) => {
-    dataPlayer.src(videoSource)
-    dataPlayer.one('loadedmetadata', () => {
-      resolve(dataPlayer.duration())
-    })
-  })
-}
-
-onBeforeUnmount(() => {
-  if (player) {
-    player.dispose()
-  }
-})
-
 const updateTime = async (time: any) => {
-  player.off('timeupdate')
-  player.pause()
   time = parseInt(((time / 100) * timeRef.value.total).toString())
-  timeRef.value.current = time
   let curTime = 0
   let curIdx: number
   for (curIdx = 0; curIdx < videoData.videos.length; curIdx++) {
     curTime += videoData.videos[curIdx].duration
     if (curTime >= time) break
   }
-  console.log('idx', curIdx)
-  console.log('time', time)
-  let durationToVideo =
-    curIdx === 0 ? time : videoData.videos.slice(0, curIdx).reduce((dur, video) => dur + video.duration, 0)
-  durationToVideo = parseInt(durationToVideo.toString())
-  let offset =
-    curIdx === 0 ? time : time - videoData.videos.slice(0, curIdx).reduce((dur, video) => dur + video.duration, 0)
-  offset = parseInt(offset.toString())
-  console.log('durationUpTo', durationToVideo)
-  console.log('videoIdx', videoIdx.value)
+  let offset = curIdx === 0 ? time : time - sumDurations(videoData.videos.slice(0, curIdx))
   if (curIdx !== videoIdx.value) {
     videoIdx.value = curIdx
     updateTimeRef(offset)
-    await loadVideoSource(videoData.videos[curIdx].src)
+    await loadVideoSource(player, videoData.videos[curIdx].src)
   }
-  console.log('offset', offset)
   player.currentTime(offset.toString())
   player.play()
-  player.on('timeupdate', () => {
-    updateTimeRef()
-  })
 }
 
-const loadVideoSource = async (source: any) => {
+const loadVideoSource = async (player: Player, source: any) => {
   return new Promise((resolve) => {
     player.src(source)
     player.one('loadedmetadata', () => {
@@ -177,7 +143,14 @@ const pause = () => {
 <template>
   <div class="wrapper">
     <video class="video-wrapper video-js" width="640" height="264" ref="videoRef"></video>
-    <scrubber :timeRef="timeRef" :progress="progress" :playStatus="playStatus" @update="updateTime" @play="play" @pause="pause"></scrubber>
+    <scrubber
+      :timeRef="timeRef"
+      :progress="progress"
+      :playStatus="playStatus"
+      @update="updateTime"
+      @play="play"
+      @pause="pause"
+    ></scrubber>
   </div>
 </template>
 <style lang="scss">

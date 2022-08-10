@@ -2,11 +2,13 @@
 import { computed, ref, onMounted, watchEffect } from 'vue'
 
 const emit = defineEmits(['update', 'play', 'pause'])
+
 const trackRef = ref()
 const progressRef = ref(0)
 const scrubProgress = ref(0)
 const scrubbing = ref(false)
 const seekTime = ref('')
+
 const props = defineProps({
   timeRef: {
     type: Object,
@@ -21,8 +23,8 @@ const props = defineProps({
   },
   playStatus: {
     type: String,
-    default: () => 'stopped'
-  }
+    default: () => 'stopped',
+  },
 })
 
 let wrapperWidth = 0
@@ -43,6 +45,7 @@ onMounted(() => {
     trackRef.value.addEventListener('mousemove', getDragPosition)
   }
 })
+
 const getClickPosition = (e: any) => {
   let target = e.target
   if (target.nodeType == 3) target = target.parentNode
@@ -61,8 +64,8 @@ const getDragPosition = (e: any) => {
     wrapperWidth = wrapperWidth || target.offsetWidth
     let seekWidth = e.offsetX
     scrubProgress.value = (seekWidth / wrapperWidth) * 100
-    if (scrubProgress.value > 100) scrubProgress.value = 100;
-    else if (scrubProgress.value < 0) scrubProgress.value = 0;
+    if (scrubProgress.value > 100) scrubProgress.value = 100
+    else if (scrubProgress.value < 0) scrubProgress.value = 0
     seekTime.value = padTime(Math.floor((scrubProgress.value / 100) * props.timeRef.total))
   } else {
     scrubbing.value = false
@@ -76,8 +79,7 @@ const padTime = (seconds: number): string => {
 }
 
 const handleControl = () => {
-  if (props.playStatus !== 'playing')
-    emit('play', true)
+  if (props.playStatus !== 'playing') emit('play', true)
   else emit('pause', true)
 }
 </script>
@@ -85,7 +87,11 @@ const handleControl = () => {
 <template>
   <div class="controls">
     <div class="hide">
-      <div class="control-options" :class="{playing: playStatus === 'playing', paused: playStatus !== 'playing'}" @click="handleControl"></div>
+      <div
+        class="control-options"
+        :class="{ playing: playStatus === 'playing', paused: playStatus !== 'playing' }"
+        @click="handleControl"
+      ></div>
       <span class="time-current">{{ formattedTimeRef.current }}</span>
       <div class="scrubber">
         <div class="track" ref="trackRef">
@@ -124,7 +130,7 @@ const handleControl = () => {
     }
 
     &.playing::before {
-        content: '⏸';
+      content: '⏸';
     }
   }
 
