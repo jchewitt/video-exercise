@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, watchEffect } from "vue";
+import { computed, ref, onMounted, watchEffect } from 'vue'
 
-const emit = defineEmits(["update", "play", "pause"]);
-const trackRef = ref();
-const progressRef = ref(0);
-const scrubProgress = ref(0);
-const scrubbing = ref(false);
-const seekTime = ref('');
+const emit = defineEmits(['update', 'play', 'pause'])
+const trackRef = ref()
+const progressRef = ref(0)
+const scrubProgress = ref(0)
+const scrubbing = ref(false)
+const seekTime = ref('')
 const props = defineProps({
   timeRef: {
     type: Object,
     default: () => ({
       current: 0,
-      total: 0
-    })
+      total: 0,
+    }),
   },
   progress: {
     type: Number,
-    default: () => 0
-  }
-});
+    default: () => 0,
+  },
+})
 
-let wrapperWidth = 0;
+let wrapperWidth = 0
 
 const formattedTimeRef = computed(() => {
-  return { current: padTime(props.timeRef.current), total: padTime(props.timeRef.total) };
-});
+  return { current: padTime(props.timeRef.current), total: padTime(props.timeRef.total) }
+})
 
 watchEffect(() => {
   if (!scrubbing.value) {
@@ -35,39 +35,39 @@ watchEffect(() => {
 
 onMounted(() => {
   if (trackRef.value) {
-    trackRef.value.addEventListener("click", getClickPosition, false);
-    trackRef.value.addEventListener("mousemove", getDragPosition);
+    trackRef.value.addEventListener('click', getClickPosition, false)
+    trackRef.value.addEventListener('mousemove', getDragPosition)
   }
-});
+})
 const getClickPosition = (e: any) => {
-  let target = e.target;
-  if (target.nodeType == 3) target = target.parentNode;
-  wrapperWidth = wrapperWidth || target.offsetWidth;
-  let seekWidth = e.offsetX;
-  scrubbing.value = false;
-  progressRef.value = (seekWidth / wrapperWidth) * 100;
-  scrubProgress.value = progressRef.value;
-  emit("update", progressRef.value);
-};
+  let target = e.target
+  if (target.nodeType == 3) target = target.parentNode
+  wrapperWidth = wrapperWidth || target.offsetWidth
+  let seekWidth = e.offsetX
+  scrubbing.value = false
+  progressRef.value = (seekWidth / wrapperWidth) * 100
+  scrubProgress.value = progressRef.value
+  emit('update', progressRef.value)
+}
 const getDragPosition = (e: any) => {
   if (e.buttons === 1) {
-    scrubbing.value = true;
-    let target = e.target;
-    if (target.nodeType == 3) target = target.parentNode;
-    wrapperWidth = wrapperWidth || target.offsetWidth;
-    let seekWidth = e.offsetX;
-    scrubProgress.value = (seekWidth / wrapperWidth) * 100;
-    seekTime.value = padTime(Math.floor(((scrubProgress.value / 100) * props.timeRef.total)));
+    scrubbing.value = true
+    let target = e.target
+    if (target.nodeType == 3) target = target.parentNode
+    wrapperWidth = wrapperWidth || target.offsetWidth
+    let seekWidth = e.offsetX
+    scrubProgress.value = (seekWidth / wrapperWidth) * 100
+    seekTime.value = padTime(Math.floor((scrubProgress.value / 100) * props.timeRef.total))
   } else {
-    scrubbing.value = false;
+    scrubbing.value = false
   }
-};
+}
 
 const padTime = (seconds: number): string => {
-  const min = Math.floor(seconds / 60);
-  const sec = seconds % 60;
-  return `${min}:${sec.toString().padStart(2, "0")}`;
-};
+  const min = Math.floor(seconds / 60)
+  const sec = seconds % 60
+  return `${min}:${sec.toString().padStart(2, '0')}`
+}
 </script>
 
 <template>
