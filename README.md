@@ -2,13 +2,10 @@
 
 #TODOs:
 
- - Move video data and logic to class.
- - Add scrubber component.
- - Use scrubber component inplace of default controls.
- - Add types and interfaces for data objects
- - Possible refactor some logic for better reusability
- - Move applicable items to scrubber component
-
+- Move video data and logic to class.
+- Add types and interfaces for data objects
+- Refactor some logic for better reusability
+- Convert event handlers to promise and incorporate handlers in scrubbing to avoid time reset on scrubbing backwards.
 
 #Development Setup
 
