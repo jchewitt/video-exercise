@@ -69,18 +69,18 @@ const setupPlayerEvents = () => {
   });
 };
 
-const updateTimeRef = () => {
+const updateTimeRef = (offset?: number) => {
   if (!videoData.videos.length) {
     timeRef.value = { current: 0, total: 0 };
     return;
   }
-  let current = player.currentTime();
+  let current = offset || player.currentTime();
   if (videoIdx.value > 0) {
     current += videoData.videos
       .slice(0, videoIdx.value)
       .reduce((dur, video) => dur + video.duration, 0);
   }
-  current = current.toFixed(0);
+  current = parseInt(current.toFixed(0));
   console.log("vidx", videoIdx.value);
   console.log("current time", current);
   const total = parseInt(
@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
   }
 });
 
-const updateTime = (time: any) => {
+const updateTime = async (time: any) => {
   player.off("timeupdate");
   player.pause();
   time = parseInt(((time / 100) * timeRef.value.total).toString());
@@ -132,7 +132,6 @@ const updateTime = (time: any) => {
     curTime += videoData.videos[curIdx].duration;
     if (curTime >= time) break;
   }
-  timeRef.value.current = time;
   console.log("idx", curIdx);
   console.log("time", time);
   let durationToVideo = (curIdx === 0) ? time : videoData.videos.slice(0, curIdx).reduce((dur, video) => dur + video.duration, 0);
@@ -143,15 +142,25 @@ const updateTime = (time: any) => {
   console.log("videoIdx", videoIdx.value);
   if (curIdx !== videoIdx.value) {
     videoIdx.value = curIdx;
-    player.src(videoData.videos[curIdx].src);
+    updateTimeRef(offset)
+    await loadVideoSource(videoData.videos[curIdx].src)
   }
   console.log("offset", offset);
-  player.currentTime(offset);
+  player.currentTime(offset.toString());
   player.play()
   player.on("timeupdate", () => {
     updateTimeRef();
   });
 };
+
+const loadVideoSource = async (source: any) => {
+  return new Promise((resolve) => {
+    player.src(source);
+    player.one('loadedmetadata', () => {
+      resolve(player)
+    })
+  })
+}
 
 const play = () => {
   player.play();

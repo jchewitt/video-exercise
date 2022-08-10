@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { watch, computed, ref, onMounted, watchEffect } from "vue";
-import type { WritableComputedRef } from "vue";
+import { computed, ref, onMounted, watchEffect } from "vue";
 
 const emit = defineEmits(["update", "play", "pause"]);
 const trackRef = ref();
 const progressRef = ref(0);
-const scrubProgress = ref(0)
+const scrubProgress = ref(0);
 const scrubbing = ref(false);
+const seekTime = ref('');
 const props = defineProps({
   timeRef: {
     type: Object,
@@ -23,11 +23,16 @@ const props = defineProps({
 
 let wrapperWidth = 0;
 
-watch(() => {
+const formattedTimeRef = computed(() => {
+  return { current: padTime(props.timeRef.current), total: padTime(props.timeRef.total) };
+});
+
+watchEffect(() => {
   if (!scrubbing.value) {
     progressRef.value = props.progress
   }
-});
+})
+
 onMounted(() => {
   if (trackRef.value) {
     trackRef.value.addEventListener("click", getClickPosition, false);
@@ -41,7 +46,7 @@ const getClickPosition = (e: any) => {
   let seekWidth = e.offsetX;
   scrubbing.value = false;
   progressRef.value = (seekWidth / wrapperWidth) * 100;
-  scrubProgress.value = progressRef.value
+  scrubProgress.value = progressRef.value;
   emit("update", progressRef.value);
 };
 const getDragPosition = (e: any) => {
@@ -52,14 +57,11 @@ const getDragPosition = (e: any) => {
     wrapperWidth = wrapperWidth || target.offsetWidth;
     let seekWidth = e.offsetX;
     scrubProgress.value = (seekWidth / wrapperWidth) * 100;
+    seekTime.value = padTime(Math.floor(((scrubProgress.value / 100) * props.timeRef.total)));
   } else {
     scrubbing.value = false;
   }
 };
-
-const formattedTimeRef = computed(() => {
-  return { current: padTime(props.timeRef.current), total: padTime(props.timeRef.total) };
-});
 
 const padTime = (seconds: number): string => {
   const min = Math.floor(seconds / 60);
@@ -75,7 +77,9 @@ const padTime = (seconds: number): string => {
       <span class="time-current">{{ formattedTimeRef.current }}</span>
       <div class="scrubber">
         <div class="track" ref="trackRef">
-          <div class="slider" :style="'width:' + (scrubbing ? scrubProgress : progressRef) + '%'"></div>
+          <div class="slider" :style="'width:' + (scrubbing ? scrubProgress : progressRef) + '%'">
+            <span class="scrub-value" v-if="scrubbing">{{ seekTime }}</span>
+          </div>
         </div>
       </div>
       <span class="time-total">{{ formattedTimeRef.total }}</span>
@@ -164,6 +168,18 @@ const padTime = (seconds: number): string => {
             top: calc(50% - 5px);
             color: transparent;
             border-radius: 8px;
+          }
+
+          .scrub-value {
+            background-color: RGBA(150, 150, 150, 0.9);
+            position: absolute;
+            right: -12px;
+            top: -25px;
+            padding: 2px 3px;
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 12px;
+            user-select: none;
           }
         }
       }
