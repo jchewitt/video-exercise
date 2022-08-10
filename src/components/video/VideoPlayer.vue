@@ -14,6 +14,7 @@ const videoRef = ref(null)
 let videoIdx = ref(0)
 const timeRef = ref({ current: 0, total: 0 })
 const progress = ref(0)
+const playStatus = ref('stopped')
 const formattedTimeRef = computed(() => {
   return { current: padTime(timeRef.value.current), total: padTime(timeRef.value.total) }
 })
@@ -32,7 +33,7 @@ const props = defineProps({
         videos: [],
       }
     },
-  },
+  }
 })
 
 const baseOptions = {
@@ -65,6 +66,12 @@ const setupPlayerEvents = () => {
   })
   player.on('timeupdate', () => {
     updateTimeRef()
+  })
+  player.on('play', () => {
+    playStatus.value = 'playing'
+  })
+  player.on('pause', () => {
+    playStatus.value = 'paused'
   })
 }
 
@@ -170,10 +177,8 @@ const pause = () => {
 <template>
   <div class="wrapper">
     <video class="video-wrapper video-js" width="640" height="264" ref="videoRef"></video>
-    <scrubber :timeRef="timeRef" :progress="progress" @update="updateTime" @play="play" @pause="pause"></scrubber>
+    <scrubber :timeRef="timeRef" :progress="progress" :playStatus="playStatus" @update="updateTime" @play="play" @pause="pause"></scrubber>
   </div>
-  <button @click="play">play</button>
-  <button @click="pause">pause</button>
 </template>
 <style lang="scss">
 .wrapper {

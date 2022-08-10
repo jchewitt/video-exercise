@@ -19,6 +19,10 @@ const props = defineProps({
     type: Number,
     default: () => 0,
   },
+  playStatus: {
+    type: String,
+    default: () => 'stopped'
+  }
 })
 
 let wrapperWidth = 0
@@ -57,6 +61,8 @@ const getDragPosition = (e: any) => {
     wrapperWidth = wrapperWidth || target.offsetWidth
     let seekWidth = e.offsetX
     scrubProgress.value = (seekWidth / wrapperWidth) * 100
+    if (scrubProgress.value > 100) scrubProgress.value = 100;
+    else if (scrubProgress.value < 0) scrubProgress.value = 0;
     seekTime.value = padTime(Math.floor((scrubProgress.value / 100) * props.timeRef.total))
   } else {
     scrubbing.value = false
@@ -68,12 +74,18 @@ const padTime = (seconds: number): string => {
   const sec = seconds % 60
   return `${min}:${sec.toString().padStart(2, '0')}`
 }
+
+const handleControl = () => {
+  if (props.playStatus !== 'playing')
+    emit('play', true)
+  else emit('pause', true)
+}
 </script>
 
 <template>
   <div class="controls">
     <div class="hide">
-      <div class="control-options" @click="emit('play', true)"></div>
+      <div class="control-options" :class="{playing: playStatus === 'playing', paused: playStatus !== 'playing'}" @click="handleControl"></div>
       <span class="time-current">{{ formattedTimeRef.current }}</span>
       <div class="scrubber">
         <div class="track" ref="trackRef">
@@ -106,15 +118,13 @@ const padTime = (seconds: number): string => {
     line-height: 25px;
     top: 0;
     font-size: 14px;
-
-    &:before {
-      content: '▶';
+    cursor: pointer;
+    &.paused::before {
+      content: '▶️';
     }
 
-    &.playing {
-      &:before {
+    &.playing::before {
         content: '⏸';
-      }
     }
   }
 
